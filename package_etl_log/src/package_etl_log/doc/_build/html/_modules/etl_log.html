@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>etl_log &mdash; Package_etl_log 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Package_etl_log
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">package_etl_log</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Package_etl_log</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>etl_log</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for etl_log</h1><div class="highlight"><pre>
+<span></span><span class="c1">#Class that insert and control the log info that is releated to the PipeLine</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+
+<span class="kn">from</span> <span class="nn">pyspark.sql.types</span> <span class="kn">import</span> <span class="n">StructType</span><span class="p">,</span> <span class="n">StructField</span><span class="p">,</span> <span class="n">StringType</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">,</span> <span class="n">BooleanType</span><span class="p">,</span> <span class="n">TimestampType</span><span class="p">,</span><span class="n">ArrayType</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span>
+
+<span class="c1">## Información del pipeline</span>
+<span class="n">__table</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__source_type</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__pipeline_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1">## Información de la data</span>
+<span class="n">__file_configuration</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__source</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__destiny_schema</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__destiny_table</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__beginning_time</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__data_date</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1">##Información del proceso</span>
+<span class="n">__status</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__comments</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">__num_records</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">__filters</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1">#init sesssion</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s2">&quot;ETL_Logs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+  
+<div class="viewcode-block" id="create_logs"><a class="viewcode-back" href="../etl_log.html#etl_log.create_logs">[docs]</a><span class="k">def</span> <span class="nf">create_logs</span><span class="p">(</span><span class="n">schema</span> <span class="o">=</span> <span class="s2">&quot;bronze&quot;</span><span class="p">,</span> <span class="n">etl_pipeline_log_table</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pipeline_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">source_type</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to initiate the table where the information related to the pipeline will be store.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        schema (string): schema where the log table is. </span>
+<span class="sd">        etl_pipeline_log_table (string): name of the table</span>
+<span class="sd">        pipeline_name (string): name of the Pipelien. It can be iddentify the version</span>
+<span class="sd">        source_type (string): type of load, e.g. Batch, streaming, etc</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">global</span> <span class="n">__table</span>
+        <span class="n">__table</span> <span class="o">=</span>  <span class="n">schema</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">etl_pipeline_log_table</span>
+        <span class="k">global</span> <span class="n">__pipeline_name</span>
+        <span class="n">__pipeline_name</span> <span class="o">=</span> <span class="n">pipeline_name</span>
+        <span class="k">global</span> <span class="n">__source_type</span>
+        <span class="n">__source_type</span> <span class="o">=</span> <span class="n">source_type</span>
+        <span class="k">global</span> <span class="n">__beginning_time</span>
+        <span class="n">__beginning_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="c1">#raising an exception</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: create_logs - insert_elt_logs: &quot;</span><span class="p">,</span><span class="n">output</span><span class="p">)</span></div>
+
+    
+
+<div class="viewcode-block" id="set_statusTrue"><a class="viewcode-back" href="../etl_log.html#etl_log.set_statusTrue">[docs]</a><span class="k">def</span> <span class="nf">set_statusTrue</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to set status True of the load process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__status</span>
+    <span class="n">__status</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="set_statusFalse"><a class="viewcode-back" href="../etl_log.html#etl_log.set_statusFalse">[docs]</a><span class="k">def</span> <span class="nf">set_statusFalse</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to set status False of the load process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__status</span>
+    <span class="n">__status</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="get_status"><a class="viewcode-back" href="../etl_log.html#etl_log.get_status">[docs]</a><span class="k">def</span> <span class="nf">get_status</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method that returns the status of the process</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Boolean: return the status of the process</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">__status</span></div>
+
+<div class="viewcode-block" id="set_num_records"><a class="viewcode-back" href="../etl_log.html#etl_log.set_num_records">[docs]</a><span class="k">def</span> <span class="nf">set_num_records</span><span class="p">(</span><span class="n">num_records</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to set status of the number of recrods that where loaded.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_records (Integer): Number of records that where loaded</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__num_records</span>
+    <span class="n">__num_records</span> <span class="o">=</span> <span class="n">num_records</span> </div>
+
+<div class="viewcode-block" id="set_filters"><a class="viewcode-back" href="../etl_log.html#etl_log.set_filters">[docs]</a><span class="k">def</span> <span class="nf">set_filters</span><span class="p">(</span><span class="n">filters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to set filters that are being used in the process</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filters (Array): Array of dict with the filter that are being used</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__filters</span>
+    <span class="n">__filters</span> <span class="o">=</span> <span class="n">filters</span></div>
+
+<div class="viewcode-block" id="set_destiny_schema"><a class="viewcode-back" href="../etl_log.html#etl_log.set_destiny_schema">[docs]</a><span class="k">def</span> <span class="nf">set_destiny_schema</span><span class="p">(</span><span class="n">destiny_schema</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to set the schema where the table is being stored</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        destiny_schema (String): Name of the schema where the data is loaded </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__destiny_schema</span>
+    <span class="n">__destiny_schema</span> <span class="o">=</span> <span class="n">destiny_schema</span></div>
+
+<div class="viewcode-block" id="set_destiny_table"><a class="viewcode-back" href="../etl_log.html#etl_log.set_destiny_table">[docs]</a><span class="k">def</span> <span class="nf">set_destiny_table</span><span class="p">(</span><span class="n">destiny_table</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to set the name of the table where the table is being stored</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        destiny_table (String): Name of the table where the data is loaded</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__destiny_table</span>
+    <span class="n">__destiny_table</span> <span class="o">=</span> <span class="n">destiny_table</span></div>
+
+<div class="viewcode-block" id="set_source"><a class="viewcode-back" href="../etl_log.html#etl_log.set_source">[docs]</a><span class="k">def</span> <span class="nf">set_source</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to set the source where the data were trasnfered</span>
+<span class="sd">    Args:</span>
+<span class="sd">        source (String): Name of the file or table</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__source</span>
+    <span class="n">__source</span> <span class="o">=</span> <span class="n">source</span></div>
+
+
+<div class="viewcode-block" id="add_comment"><a class="viewcode-back" href="../etl_log.html#etl_log.add_comment">[docs]</a><span class="k">def</span> <span class="nf">add_comment</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method to add comments of the process</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        msg (String): Message that want to be save on the table to indicate the error</span>
+<span class="sd">        func (String): Function where the comment was generated</span>
+<span class="sd">        level (String): Criticity level of the message, DEBUG, INFO, WARNING, ERROR</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__comments</span>
+    <span class="n">comment_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">__comments</span> <span class="o">+=</span> <span class="s2">&quot;[</span><span class="si">{}</span><span class="s2">][</span><span class="si">{}</span><span class="s2">][Function - </span><span class="si">{}</span><span class="s2">]: </span><span class="si">{}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">comment_time</span><span class="p">,</span><span class="n">level</span><span class="p">,</span><span class="n">func</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="set_info_load"><a class="viewcode-back" href="../etl_log.html#etl_log.set_info_load">[docs]</a><span class="k">def</span> <span class="nf">set_info_load</span><span class="p">(</span><span class="n">file_configuration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">destiny_schema</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">destiny_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filters</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method that add the information of the data source that were processed. It is call to initializate the variables, like time where it begins</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        file_configuration (String): Path of the JSON Configuration of the table</span>
+<span class="sd">        source (String): Path of the input source, it could be a file or table</span>
+<span class="sd">        destiny_schema (String): Name of the schema where the data is loaded </span>
+<span class="sd">        destiny_table (String): Name of the table where the data is loaded</span>
+<span class="sd">        filters (array): List of filters, like columns that are Timestamp, partition date</span>
+<span class="sd">        data_date (String): Date of the data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__file_configuration</span>
+    <span class="n">__file_configuration</span><span class="o">=</span><span class="n">file_configuration</span>
+    <span class="k">global</span> <span class="n">__source</span>
+    <span class="n">__source</span> <span class="o">=</span> <span class="n">source</span>
+    <span class="k">global</span> <span class="n">__destiny_schema</span>
+    <span class="n">__destiny_schema</span><span class="o">=</span><span class="n">destiny_schema</span>
+    <span class="k">global</span> <span class="n">__destiny_table</span>
+    <span class="n">__destiny_table</span><span class="o">=</span><span class="n">destiny_table</span>
+    <span class="k">global</span> <span class="n">__beginning_time</span>
+    <span class="n">__beginning_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">global</span> <span class="n">__data_date</span>
+    <span class="n">__data_date</span> <span class="o">=</span> <span class="n">data_date</span>
+    <span class="k">global</span> <span class="n">__status</span>
+    <span class="n">__status</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">global</span> <span class="n">__comments</span>
+    <span class="n">__comments</span><span class="o">=</span> <span class="s2">&quot;&quot;</span>  
+    <span class="k">global</span> <span class="n">__num_records</span>
+    <span class="n">__num_records</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">global</span> <span class="n">__filters</span>
+    <span class="n">__filters</span> <span class="o">=</span> <span class="n">filters</span> </div>
+
+<div class="viewcode-block" id="insert_elt_logs"><a class="viewcode-back" href="../etl_log.html#etl_log.insert_elt_logs">[docs]</a><span class="k">def</span> <span class="nf">insert_elt_logs</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Method to save the process result in the table that where configurate it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">get_df</span><span class="p">()</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s1">&#39;append&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;mergeSchema&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;delta&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">__table</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="c1">#raising an exception</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: writing logs - insert_elt_logs&quot;</span><span class="p">,</span><span class="n">output</span><span class="p">)</span></div>
+      
+<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../etl_log.html#etl_log.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method that returns an array with the process information, like beginning time, ending time, table&#39;s name, etc.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Array: return an array with all data structured</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">today</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">))</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[(</span><span class="n">today</span><span class="p">,</span>
+        <span class="n">__source_type</span><span class="p">,</span>
+        <span class="n">__pipeline_name</span><span class="p">,</span>
+        <span class="n">__file_configuration</span><span class="p">,</span>
+        <span class="n">__source</span><span class="p">,</span>
+        <span class="n">__destiny_schema</span><span class="p">,</span>
+        <span class="n">__destiny_table</span><span class="p">,</span>
+        <span class="n">__data_date</span><span class="p">,</span>
+        <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">__beginning_time</span><span class="p">),</span>
+        <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()),</span>
+        <span class="n">__status</span><span class="p">,</span>
+        <span class="n">__comments</span><span class="p">,</span>
+        <span class="n">__num_records</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">__filters</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="get_schema"><a class="viewcode-back" href="../etl_log.html#etl_log.get_schema">[docs]</a><span class="k">def</span> <span class="nf">get_schema</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method that returns a StructType with the schema of the log table</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">       StructType: return a StructType with the table&#39;s schema</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">StructType</span><span class="p">([</span> 
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;partition_date&quot;</span><span class="p">,</span><span class="n">IntegerType</span><span class="p">(),</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;source_type&quot;</span><span class="p">,</span><span class="n">StringType</span><span class="p">(),</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;pipeline_name&quot;</span><span class="p">,</span><span class="n">StringType</span><span class="p">(),</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;file_configuration&quot;</span><span class="p">,</span><span class="n">StringType</span><span class="p">(),</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;destiny_schema&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;destiny_table&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;data_date&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;beginning_time&quot;</span><span class="p">,</span> <span class="n">TimestampType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;ending_time&quot;</span><span class="p">,</span> <span class="n">TimestampType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">,</span><span class="n">BooleanType</span><span class="p">(),</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;comments&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;num_records&quot;</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;filters&quot;</span><span class="p">,</span><span class="n">ArrayType</span><span class="p">(</span>
+            <span class="n">StructType</span><span class="p">([</span>
+               <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;partition&#39;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+               <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;field_to_string&#39;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+               <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;field_to_date&#39;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+               <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;field_to_stamp&#39;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">)</span>
+               <span class="p">])</span>
+            <span class="p">),</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">])</span>
+    <span class="k">return</span> <span class="n">schema</span></div>
+      
+<div class="viewcode-block" id="get_df"><a class="viewcode-back" href="../etl_log.html#etl_log.get_df">[docs]</a><span class="k">def</span> <span class="nf">get_df</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Method that returns the dataframe to be stored in the tble</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Dataframe: return a datafrema with the table&#39;s schema and process data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(),</span><span class="n">schema</span> <span class="o">=</span> <span class="n">get_schema</span><span class="p">())</span>  
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Juan Carlos Cifuentes Duran.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

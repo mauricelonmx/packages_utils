@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utilities &mdash; package_utilities 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> package_utilities
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">package_utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">package_utilities</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>utilities</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for utilities</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyspark.sql.types</span> <span class="kn">import</span>  <span class="n">StringType</span><span class="p">,</span> <span class="n">StructType</span><span class="p">,</span> <span class="n">StructField</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">,</span>  <span class="n">BooleanType</span><span class="p">,</span> <span class="n">TimestampType</span><span class="p">,</span> <span class="n">ArrayType</span><span class="p">,</span> <span class="n">DateType</span><span class="p">,</span> <span class="n">LongType</span><span class="p">,</span> <span class="n">DoubleType</span><span class="p">,</span> <span class="n">ByteType</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql.functions</span> <span class="kn">import</span>  <span class="n">col</span><span class="p">,</span> <span class="n">to_timestamp</span><span class="p">,</span>  <span class="n">to_date</span><span class="p">,</span>  <span class="n">length</span> 
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+
+
+
+<div class="viewcode-block" id="convert_to_string_type"><a class="viewcode-back" href="../utilities.html#utilities.convert_to_string_type">[docs]</a><span class="k">def</span> <span class="nf">convert_to_string_type</span><span class="p">(</span><span class="n">df</span><span class="p">:</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Method to convert columns to stringType</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (dataframe): dataframe </span>
+<span class="sd">        columns (array): contain an array of columns to be changed</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: throw exception in case of error</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dataframe: dataframe modified</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="n">column</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">StringType</span><span class="p">())</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>    </div>
+
+
+
+<div class="viewcode-block" id="convert_to_time_stamp_type"><a class="viewcode-back" href="../utilities.html#utilities.convert_to_time_stamp_type">[docs]</a><span class="k">def</span> <span class="nf">convert_to_time_stamp_type</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span><span class="n">columns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Method to convert  columns to time_stamp</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (dataframe): dataframe</span>
+<span class="sd">        columns (array): contain an array of columns to be changed</span>
+<span class="sd">    </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: throw exception in case of error</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dataframe: dataframe modified</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">length</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">column</span><span class="p">))</span> <span class="o">&gt;=</span><span class="mi">17</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">&gt;=</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="n">column</span><span class="p">,</span>  <span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">column</span><span class="p">),</span><span class="s2">&quot;MM/dd/yyyy HH:mm:ss&quot;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">length</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">column</span><span class="p">))</span> <span class="o">&gt;</span><span class="mi">10</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">&gt;=</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="n">column</span><span class="p">,</span>  <span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">column</span><span class="p">),</span><span class="s2">&quot;d/M/yy H:mm&quot;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="n">column</span><span class="p">,</span>  <span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">column</span><span class="p">),</span><span class="s2">&quot;dd/MM/yyyy&quot;</span><span class="p">)</span>  <span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span><span class="p">;</span>  
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="convert_to_date_type"><a class="viewcode-back" href="../utilities.html#utilities.convert_to_date_type">[docs]</a><span class="k">def</span> <span class="nf">convert_to_date_type</span><span class="p">(</span><span class="n">df</span><span class="p">:</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Method to convert columns to date</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (dataframe): dataframe</span>
+<span class="sd">        columns (array): contain an array of columns to be changed</span>
+<span class="sd">    </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: throw exception in case of error</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dataframe: dataframe modified</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">to_date</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">column</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">StringType</span><span class="p">())</span> <span class="p">,</span> <span class="s1">&#39;yyyyMMdd&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">df</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>   </div>
+ 
+ 
+    
+<div class="viewcode-block" id="convert_array_to_string"><a class="viewcode-back" href="../utilities.html#utilities.convert_array_to_string">[docs]</a><span class="k">def</span> <span class="nf">convert_array_to_string</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Method to convert _array to string</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        array (array): array</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: throw exception in case of error</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        String: return a string separated with commas</span>
+<span class="sd">    &quot;&quot;&quot;</span>   
+    <span class="k">try</span><span class="p">:</span> 
+        <span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">array</span><span class="p">))</span>   
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+    
+    
+<div class="viewcode-block" id="check_header_schema"><a class="viewcode-back" href="../utilities.html#utilities.check_header_schema">[docs]</a><span class="k">def</span> <span class="nf">check_header_schema</span><span class="p">(</span><span class="n">struct_df</span><span class="p">:</span><span class="n">StructType</span><span class="p">):</span> 
+    <span class="sd">&quot;&quot;&quot;Method to validate the fields in StructField</span>
+<span class="sd">    Args:</span>
+<span class="sd">        struct_df (StructType): StructType to be evaluated </span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: lauch exception in case of error</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        boolean: boolean in case of not satisfy the validation of fields arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">flag</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">struct_df</span><span class="o">.</span><span class="n">fieldNames</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
+            <span class="n">flag</span><span class="o">=</span><span class="kc">False</span>
+            
+        <span class="k">return</span> <span class="n">flag</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="check_data_file"><a class="viewcode-back" href="../utilities.html#utilities.check_data_file">[docs]</a><span class="k">def</span> <span class="nf">check_data_file</span><span class="p">(</span><span class="n">dataFrame</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Method to check if a dataframe have information</span>
+<span class="sd">    Args:</span>
+<span class="sd">        dataFrame (dataframe): dataframe</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: launch exception in case of error</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        boolean: boolean in case of not satisfy the validations of records</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+         <span class="n">flag</span><span class="o">=</span><span class="kc">True</span>
+         <span class="n">data</span> <span class="o">=</span> <span class="n">dataFrame</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+         <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="p">:</span>
+             <span class="n">flag</span><span class="o">=</span> <span class="kc">False</span>
+         
+         <span class="k">return</span> <span class="n">flag</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+    
+
+    
+<div class="viewcode-block" id="check_header_names_schema"><a class="viewcode-back" href="../utilities.html#utilities.check_header_names_schema">[docs]</a><span class="k">def</span> <span class="nf">check_header_names_schema</span><span class="p">(</span><span class="n">struct_conf</span><span class="p">:</span><span class="n">StructType</span><span class="p">,</span> <span class="n">struct_not_conf</span><span class="p">:</span><span class="n">StructType</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Method to find or compare column names in a StructType configured in a dataframe</span>
+<span class="sd">    Args:</span>
+<span class="sd">        struct_conf (StructType): StructType configurations in columns</span>
+<span class="sd">        struct_not_conf (StructType): StructType not configurated</span>
+<span class="sd">   </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: launch exception in case of error</span>
+<span class="sd">   </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        list: an array of columns names not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">colums_failed</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">fields_conf</span> <span class="o">=</span> <span class="n">struct_conf</span><span class="o">.</span><span class="n">fieldNames</span><span class="p">()</span>
+        <span class="n">fields_not_conf</span> <span class="o">=</span> <span class="n">struct_not_conf</span><span class="o">.</span><span class="n">fieldNames</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">column_in_file</span> <span class="ow">in</span> <span class="n">fields_not_conf</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">column_in_file</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fields_conf</span><span class="p">:</span> 
+                <span class="n">colums_failed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column_in_file</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">colums_failed</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+    
+
+    
+<div class="viewcode-block" id="convert_to_schema"><a class="viewcode-back" href="../utilities.html#utilities.convert_to_schema">[docs]</a><span class="k">def</span> <span class="nf">convert_to_schema</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StructType</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Method to build a schema for table from a dict</span>
+<span class="sd">    </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: launch exception in case of error</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        StructType: the schema parametrized</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+          <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">StructField</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">__str_to_class</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="kc">True</span><span class="p">))</span>
+
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">StructType</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">schema</span>
+    
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+        
+        
+        
+<span class="k">def</span> <span class="nf">__str_to_class</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Method to get typeobject in schema  </span>
+<span class="sd">    Args:</span>
+<span class="sd">        val (StructField): type struct in column</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        StructFiled: the struct field in column</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="n">obj</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;IntegerType()&#39;</span><span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">IntegerType</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;StringType()&#39;</span><span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">StringType</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;TimestampType()&quot;</span> <span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">TimestampType</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;LongType()&quot;</span> <span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">LongType</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;DoubleType()&quot;</span> <span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">DoubleType</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;ByteType()&quot;</span> <span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">ByteType</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;BooleanType()&quot;</span> <span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">BooleanType</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;ArrayType()&quot;</span> <span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">ArrayType</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;DateType()&quot;</span> <span class="p">:</span>
+      <span class="n">obj</span> <span class="o">=</span> <span class="n">DateType</span><span class="p">()</span>
+      
+    <span class="k">return</span> <span class="n">obj</span>
+
+
+
+<div class="viewcode-block" id="check_header_order_schema"><a class="viewcode-back" href="../utilities.html#utilities.check_header_order_schema">[docs]</a><span class="k">def</span> <span class="nf">check_header_order_schema</span><span class="p">(</span><span class="n">struct_conf</span><span class="p">:</span><span class="n">StructType</span><span class="p">,</span> <span class="n">struct_not_conf</span><span class="p">:</span><span class="n">StructType</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Method to check the order of headers in the file readed and configured</span>
+
+<span class="sd">        struct_conf (StructType): StructType configurations in columns</span>
+<span class="sd">        struct_not_conf (StructType): StructType not configurated</span>
+<span class="sd">   </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: launch exception in case of error</span>
+<span class="sd">   </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        boolean: boolean in case of not satisfy the names colums configurated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">tuple_struct_conf</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">struct_conf</span><span class="o">.</span><span class="n">fieldNames</span><span class="p">())</span>
+        <span class="n">tuple_struct_not_conf</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">struct_not_conf</span><span class="o">.</span><span class="n">fieldNames</span><span class="p">())</span>
+        
+        <span class="k">if</span> <span class="n">tuple_struct_conf</span> <span class="o">!=</span> <span class="n">tuple_struct_not_conf</span><span class="p">:</span>
+            <span class="n">flag</span><span class="o">=</span><span class="kc">False</span>
+        
+        <span class="k">return</span> <span class="n">flag</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Mauricio Londono.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
