@@ -6,77 +6,74 @@ Home-page: UNKNOWN
 Author: Juan Carlos Cifuentes Durán
 Author-email: juan.cifuentes@elektra,com.mx
 License: UNKNOWN
+Description: # package_etl_log
+        ![example branch parameter](https://github.com/github/docs/actions/workflows/main.yml/badge.svg?branch=feature)
+        <br>
+        ETL_Log es un paquete que se encarga de registrar la información y almacenar los datos en la tabla indicada.
+        
+        
+        ## Features
+        
+        ETL_LOG: 
+        - create_logs : método de inicialización indicando la tabla dónde se almacenará la información.
+        - set_info_load: método para adicionar información de la ingesta, como la tabla que se va a ingestar, los ficheros de configuración y la fecha y hora de inicio.
+        - set_status: método para setear el estado del proceso
+        - set_num_records: método para setear el número de registros ingestados
+        - set_filters: método para setear un arreglo con los parametros que se utilizar para el procedimiento
+        - set_destiny_schema: método para setear la BBDD dónde se encuentra la tablaen la que se ingestarán los datos
+        - set_destiny_table: método para setar la tabla sobre la que se ingestarán los datos
+        - set_source_csv : método para setear la URL del fichero a ingestar
+        - add_comment: método para setear el comentario que se va a registras 
+        
+        ## Tech
+        
+        
+        - [Python] - lenguaje orientado a objetos!
+        
+        ## Importacion del paquete
+        
+        Importar la dependencia sobre la notebook de databricks asi.
+        
+        ```sh
+        from package_etl_log import etl_log
+        ```
+        
+        Desde la notebook llamar el objeto...
+        
+        ```sh
+        etl_log.create_logs( "bronze", 'elt_pipeline_cockpit_recargas_logs', "cockpit-recargas_pipeLine-ETL_V1.0.0", "batch") # Indicando la BBDD y la tabla que registrara la información, el nombre del proceso y el tipo de carga
+        ```
+        
+        Cada vez que se lea una ingesta, se debe ...
+        ```sh
+        etl_log.set_info_load("{}{}".format(path_conf, file_conf)) #Indicar el fichero de configuración
+        ```
+        
+        Al finalizar la carga, setear los campos que se necesiten como...
+        ```sh
+        
+        etl_log.set_destiny_table( )
+        etl_log.set_filters(filters)
+        etl_log.set_num_records( df.count())
+        etl_log.add_comment(e, func="create_bronze_tables",level="ERROR")
+        etl_log.set_status(False)
+        ...
+        
+        ```
+        
+        Para guardar la información en la tabla de logs, utilizar el siguiente comando...
+        ```sh
+        etl_log.insert_elt_logs() 
+        ```
+        
+        ## License
+        
+        MIT
+        
+        **Free Software*
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
-License-File: LICENSE
-
-# package_etl_log
-![example branch parameter](https://github.com/github/docs/actions/workflows/main.yml/badge.svg?branch=feature)
-<br>
-ETL_Log es un paquete que se encarga de registrar la información y almacenar los datos en la tabla indicada.
-
-
-## Features
-
-ETL_LOG: 
-- create_logs : método de inicialización indicando la tabla dónde se almacenará la información.
-- set_info_load: método para adicionar información de la ingesta, como la tabla que se va a ingestar, los ficheros de configuración y la fecha y hora de inicio.
-- set_status: método para setear el estado del proceso
-- set_num_records: método para setear el número de registros ingestados
-- set_filters: método para setear un arreglo con los parametros que se utilizar para el procedimiento
-- set_destiny_schema: método para setear la BBDD dónde se encuentra la tablaen la que se ingestarán los datos
-- set_destiny_table: método para setar la tabla sobre la que se ingestarán los datos
-- set_source_csv : método para setear la URL del fichero a ingestar
-- add_comment: método para setear el comentario que se va a registras 
-
-## Tech
-
-
-- [Python] - lenguaje orientado a objetos!
-
-## Importacion del paquete
-
-Importar la dependencia sobre la notebook de databricks asi.
-
-```sh
-from package_etl_log import etl_log
-```
-
-Desde la notebook llamar el objeto...
-
-```sh
-etl_log.create_logs( "bronze", 'elt_pipeline_cockpit_recargas_logs', "cockpit-recargas_pipeLine-ETL_V1.0.0", "batch") # Indicando la BBDD y la tabla que registrara la información, el nombre del proceso y el tipo de carga
-```
-
-Cada vez que se lea una ingesta, se debe ...
-```sh
-etl_log.set_info_load("{}{}".format(path_conf, file_conf)) #Indicar el fichero de configuración
-```
-
-Al finalizar la carga, setear los campos que se necesiten como...
-```sh
-
-etl_log.set_destiny_table( )
-etl_log.set_filters(filters)
-etl_log.set_num_records( df.count())
-etl_log.add_comment(e, func="create_bronze_tables",level="ERROR")
-etl_log.set_status(False)
-...
-
-```
-
-Para guardar la información en la tabla de logs, utilizar el siguiente comando...
-```sh
-etl_log.insert_elt_logs() 
-```
-
-## License
-
-MIT
-
-**Free Software*
-
